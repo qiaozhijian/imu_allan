@@ -6,36 +6,37 @@
 #include <eigen3/Eigen/SVD>
 #include <iostream>
 
-namespace cv
-{
+namespace cv {
 
-class DLT
-{
+    class DLT {
     public:
-    DLT( const std::vector< Eigen::Vector3d >& pts_2, const std::vector< Eigen::Vector3d >& pts_3 );
+        DLT(const std::vector<Eigen::Vector3d> &pts_2, const std::vector<Eigen::Vector3d> &pts_3);
 
     public:
-    Eigen::Matrix3d getR( ) const { return R; }
-    Eigen::Vector3d getT( ) const { return T; }
-    bool solved( ) const { return m_solve_ok; }
+        Eigen::Matrix3d getR() const { return R; }
+
+        Eigen::Vector3d getT() const { return T; }
+
+        bool solved() const { return m_solve_ok; }
 
     private:
-    void readPointsPlanar( const std::vector< Eigen::Vector3d >& pts_2,
-                           const std::vector< Eigen::Vector3d >& pts_3 );
-    void solveDLT( );
+        void readPointsPlanar(const std::vector<Eigen::Vector3d> &pts_2,
+                              const std::vector<Eigen::Vector3d> &pts_3);
+
+        void solveDLT();
 
     private:
-    Eigen::Matrix3d R;
-    Eigen::Matrix3d RR;
-    Eigen::Vector3d T;
+        Eigen::Matrix3d R;
+        Eigen::Matrix3d RR;
+        Eigen::Vector3d T;
 
-    Eigen::MatrixXd M;
-    Eigen::MatrixXd mat_tmp;
-    int m_num_points;
-    bool m_solve_ok;
+        Eigen::MatrixXd M;
+        Eigen::MatrixXd mat_tmp;
+        int m_num_points;
+        bool m_solve_ok;
 
     public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    };
 }
 #endif // DLT_H

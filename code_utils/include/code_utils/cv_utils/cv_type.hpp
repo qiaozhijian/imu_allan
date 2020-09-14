@@ -3,8 +3,7 @@
 
 #include <opencv2/core.hpp>
 
-namespace cv
-{
+namespace cv {
 
 #define CV_8UC12 CV_MAKETYPE( CV_8U, 12 )
 
@@ -20,27 +19,27 @@ namespace cv
 
 #define CV_32FC5 CV_MAKETYPE( CV_32F, 5 )
 
-typedef Vec< uchar, 12 > Vec12b;
+    typedef Vec<uchar, 12> Vec12b;
 
-typedef Vec< short, 12 > Vec12s;
-typedef Vec< short, 16 > Vec16s;
-typedef Vec< short, 24 > Vec24s;
-typedef Vec< short, 32 > Vec32s;
+    typedef Vec<short, 12> Vec12s;
+    typedef Vec<short, 16> Vec16s;
+    typedef Vec<short, 24> Vec24s;
+    typedef Vec<short, 32> Vec32s;
 
-typedef Vec< char, 3 > Vec3c;
-typedef Vec< char, 4 > Vec4c;
+    typedef Vec<char, 3> Vec3c;
+    typedef Vec<char, 4> Vec4c;
 
-typedef Vec< char, 12 > Vec12c;
-typedef Vec< char, 16 > Vec16c;
-typedef Vec< char, 24 > Vec24c;
-typedef Vec< char, 32 > Vec32c;
+    typedef Vec<char, 12> Vec12c;
+    typedef Vec<char, 16> Vec16c;
+    typedef Vec<char, 24> Vec24c;
+    typedef Vec<char, 32> Vec32c;
 
-typedef Vec< int, 12 > Vec12i;
-typedef Vec< int, 16 > Vec16i;
-typedef Vec< int, 24 > Vec24i;
-typedef Vec< int, 32 > Vec32i;
+    typedef Vec<int, 12> Vec12i;
+    typedef Vec<int, 16> Vec16i;
+    typedef Vec<int, 24> Vec24i;
+    typedef Vec<int, 32> Vec32i;
 
-typedef Vec< float, 5 > Vec5f;
+    typedef Vec<float, 5> Vec5f;
 }
 
 #endif // CV_TYPE_HPP

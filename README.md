@@ -30,10 +30,16 @@ Accelerometer "bias Instability" | `acc_w` | <img src="https://latex.codecogs.co
 
 (according to technical report: [`Allan Variance: Noise Analysis for Gyroscopes`](http://cache.freescale.com/files/sensors/doc/app_note/AN5087.pdf "Allan Variance: Noise Analysis for Gyroscopes"))
 
+* Interpret the generated charts to find noise values
+    * Run the process results script
+    * Will fit a -1/2 line to the left side of the allan plot
+    * White noise is at tau=1 (according to [kalibr wiki](https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model#from-the-allan-standard-deviation-ad))
+    * Will fit a 1/2 line to the right side of the allan plot
+    * Random walk is at tau=3 (according to [kalibr wiki](https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model#from-the-allan-standard-deviation-ad))
 ## sample test
 
-<img src="figure/gyr.jpg">
-<img src="figure/acc.jpg">
+<img src="imu_utils/figure/gyr.jpg">
+<img src="imu_utils/figure/acc.jpg">
 
 * blue  : Vi-Sensor, ADIS16448, `200Hz`
 * red   : 3dm-Gx4, `500Hz`
@@ -48,9 +54,6 @@ Accelerometer "bias Instability" | `acc_w` | <img src="https://latex.codecogs.co
 ```
 sudo apt-get install libdw-dev
 ```
-
-* download required [`code_utils`](https://github.com/gaowenliang/code_utils "code_utils");
-
 * put the ROS package `imu_utils` and `code_utils` into your workspace, usually named `catkin_ws`;
 
 * cd to your workspace, build with `catkin_make`;
