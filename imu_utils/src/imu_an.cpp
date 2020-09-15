@@ -235,22 +235,21 @@ main( int argc, char** argv )
     rosbag::Bag bag;
     bag.open(pathBag, rosbag::bagmode::Read);
     rosbag::View view(bag);
-
-    rosbag::View view_full;
-
-    // Start a few seconds in from the full view time
-    // If we have a negative duration then use the full bag length
-    view.addQuery(bag);
     double t_start = view.getBeginTime().toSec();
     double t_end = view.getEndTime().toSec();
     const char symbol[4] = {'|','/','-','\\'};
+    int lastI = 0;
     for (const rosbag::MessageInstance& m : view) {
         // Handle IMU message
         sensor_msgs::Imu::ConstPtr s1 = m.instantiate<sensor_msgs::Imu>();
         if (s1 != NULL && !m.getTopic().compare(IMU_TOPIC)) {
             double t = s1->header.stamp.toSec();
             int i = (int)( (t - t_start) / (t_end - t_start) * 100);
-            printf("[#][%d%%][%c]\r", i, symbol[i%4]);
+            if(lastI!=i)
+            {
+                printf("[#][%d%%][%c]\r", i, symbol[i%4]);
+                lastI = i;
+            }
             fflush(stdout);
             imu_callback(s1);
         }
