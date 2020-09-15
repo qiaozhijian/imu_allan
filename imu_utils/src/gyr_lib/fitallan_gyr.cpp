@@ -129,6 +129,19 @@ FitAllanGyr::getWhiteNoise( ) const
     return sqrt( freq ) * sqrt( calcSigma2( Q, N, B, K, R, 1 ) ) / ( 57.3 * 3600 );
 }
 
+
+double
+FitAllanGyr::getBiasInstabilityCtn( ) const
+{
+    return sqrt( freq ) * findMinNum( calcSimDeviation( m_taus ) ) / ( 57.3 * 3600 );
+}
+
+double
+FitAllanGyr::getWhiteNoiseCtn( ) const
+{
+    return sqrt( calcSigma2( Q, N, B, K, R, 1 ) ) / ( 57.3 * 3600 );
+}
+
 double
 FitAllanGyr::findMinNum( const std::vector< double > num ) const
 {

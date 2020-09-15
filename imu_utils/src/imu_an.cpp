@@ -31,18 +31,11 @@ imu::AllanGyr* gyr_z;
 imu::AllanAcc* acc_x;
 imu::AllanAcc* acc_y;
 imu::AllanAcc* acc_z;
-double start_t;
-bool start       = true;
-bool bend         = false;
-int max_time_min = 10;
 std::string data_save_path;
 
 void
 imu_callback( const sensor_msgs::ImuConstPtr& imu_msg )
 {
-    //    m_buf.lock( );
-    //    imu_buf.push( imu_msg );
-    //    m_buf.unlock( );
     double time = imu_msg->header.stamp.toSec( );
     gyr_x->pushRadPerSec( imu_msg->angular_velocity.x, time );
     gyr_y->pushRadPerSec( imu_msg->angular_velocity.y, time );
@@ -50,73 +43,12 @@ imu_callback( const sensor_msgs::ImuConstPtr& imu_msg )
     acc_x->pushMPerSec2( imu_msg->linear_acceleration.x, time );
     acc_y->pushMPerSec2( imu_msg->linear_acceleration.y, time );
     acc_z->pushMPerSec2( imu_msg->linear_acceleration.z, time );
-
-    if ( start )
-    {
-        start_t = time;
-        start   = false;
-    }
-    else
-    {
-        double time_min = ( time - start_t ) / 60;
-        if ( time_min > max_time_min )
-            bend = true;
-    }
 }
-
-void
-writeData1( const std::string sensor_name, //
-            const std::vector< double >& gyro_ts_x,
-            const std::vector< double >& gyro_d )
-{
-    std::ofstream out_t;
-    std::ofstream out_x;
-    out_t.open( data_save_path + "data_" + sensor_name + "_t.txt", std::ios::trunc );
-    out_x.open( data_save_path + "data_" + sensor_name + "_x.txt", std::ios::trunc );
-    out_t << std::setprecision( 10 );
-    out_x << std::setprecision( 10 );
-    for ( unsigned int index = 0; index < gyro_ts_x.size( ); ++index )
-    {
-        out_t << gyro_ts_x[index] << '\n';
-        out_x << gyro_d[index] << '\n';
-    }
-    out_t.close( );
-    out_x.close( );
-}
-
-void
-writeData3( const std::string sensor_name,
+void writeData3( const std::string sensor_name,
             const std::vector< double >& gyro_ts_x,
             const std::vector< double >& gyro_d_x,
             const std::vector< double >& gyro_d_y,
-            const std::vector< double >& gyro_d_z )
-{
-    std::ofstream out_t;
-    std::ofstream out_x;
-    std::ofstream out_y;
-    std::ofstream out_z;
-    out_t.open( data_save_path + "data_" + sensor_name + "_t.txt", std::ios::trunc );
-    out_x.open( data_save_path + "data_" + sensor_name + "_x.txt", std::ios::trunc );
-    out_y.open( data_save_path + "data_" + sensor_name + "_y.txt", std::ios::trunc );
-    out_z.open( data_save_path + "data_" + sensor_name + "_z.txt", std::ios::trunc );
-    out_t << std::setprecision( 10 );
-    out_x << std::setprecision( 10 );
-    out_y << std::setprecision( 10 );
-    out_z << std::setprecision( 10 );
-
-    for ( int index = 0; index < gyro_ts_x.size( ); ++index )
-    {
-        out_t << gyro_ts_x[index] << '\n';
-        out_x << gyro_d_x[index] << '\n';
-        out_y << gyro_d_y[index] << '\n';
-        out_z << gyro_d_z[index] << '\n';
-    }
-
-    out_t.close( );
-    out_x.close( );
-    out_y.close( );
-    out_z.close( );
-}
+            const std::vector< double >& gyro_d_z );
 
 void
 writeYAML( const std::string data_path,
@@ -126,84 +58,7 @@ writeYAML( const std::string data_path,
            const imu::FitAllanGyr& gyr_z,
            const imu::FitAllanAcc& acc_x,
            const imu::FitAllanAcc& acc_y,
-           const imu::FitAllanAcc& acc_z )
-{
-    cv::FileStorage fs( data_path + sensor_name + "_imu_param.yaml", cv::FileStorage::WRITE );
-
-    fs << "type"
-       << "IMU";
-
-    fs << "name" << sensor_name;
-
-    fs << "Gyr";
-    fs << "{";
-    fs << "unit"
-       << " rad/s";
-
-    fs << "avg-axis";
-    fs << "{";
-    fs << std::string( "gyr_n" )
-       << ( gyr_x.getWhiteNoise( ) + gyr_y.getWhiteNoise( ) + gyr_z.getWhiteNoise( ) ) / 3;
-    fs << std::string( "gyr_w" )
-       << ( gyr_x.getBiasInstability( ) + gyr_y.getBiasInstability( ) + gyr_z.getBiasInstability( ) ) / 3;
-
-    fs << "}";
-
-    fs << "x-axis";
-    fs << "{";
-    fs << std::string( "gyr_n" ) << gyr_x.getWhiteNoise( );
-    fs << std::string( "gyr_w" ) << gyr_x.getBiasInstability( );
-    fs << "}";
-
-    fs << "y-axis";
-    fs << "{";
-    fs << std::string( "gyr_n" ) << gyr_y.getWhiteNoise( );
-    fs << std::string( "gyr_w" ) << gyr_y.getBiasInstability( );
-    fs << "}";
-
-    fs << "z-axis";
-    fs << "{";
-    fs << std::string( "gyr_n" ) << gyr_z.getWhiteNoise( );
-    fs << std::string( "gyr_w" ) << gyr_z.getBiasInstability( );
-    fs << "}";
-
-    fs << "}";
-
-    fs << "Acc";
-    fs << "{";
-    fs << "unit"
-       << " m/s^2";
-
-    fs << "avg-axis";
-    fs << "{";
-    fs << std::string( "acc_n" )
-       << ( acc_x.getWhiteNoise( ) + acc_y.getWhiteNoise( ) + acc_z.getWhiteNoise( ) ) / 3;
-    fs << std::string( "acc_w" )
-       << ( acc_x.getBiasInstability( ) + acc_y.getBiasInstability( ) + acc_z.getBiasInstability( ) ) / 3;
-    fs << "}";
-
-    fs << "x-axis";
-    fs << "{";
-    fs << std::string( "acc_n" ) << acc_x.getWhiteNoise( );
-    fs << std::string( "acc_w" ) << acc_x.getBiasInstability( );
-    fs << "}";
-
-    fs << "y-axis";
-    fs << "{";
-    fs << std::string( "acc_n" ) << acc_y.getWhiteNoise( );
-    fs << std::string( "acc_w" ) << acc_y.getBiasInstability( );
-    fs << "}";
-
-    fs << "z-axis";
-    fs << "{";
-    fs << std::string( "acc_n" ) << acc_z.getWhiteNoise( );
-    fs << std::string( "acc_w" ) << acc_z.getBiasInstability( );
-    fs << "}";
-
-    fs << "}";
-
-    fs.release( );
-}
+           const imu::FitAllanAcc& acc_z );
 
 int
 main( int argc, char** argv )
@@ -221,7 +76,6 @@ main( int argc, char** argv )
     IMU_NAME       = ros_utils::readParam< std::string >( n, "imu_name" );
     pathBag = ros_utils::readParam< std::string >( n, "path_bag" );
     data_save_path = ros_utils::readParam< std::string >( n, "data_save_path" );
-    max_time_min   = ros_utils::readParam< int >( n, "max_time_min" );
     max_cluster    = ros_utils::readParam< int >( n, "max_cluster" );
 
     gyr_x = new imu::AllanGyr( "gyr x", max_cluster );
@@ -334,4 +188,193 @@ main( int argc, char** argv )
     writeYAML( data_save_path, IMU_NAME, fit_gyr_x, fit_gyr_y, fit_gyr_z, fit_acc_x, fit_acc_y, fit_acc_z );
 
     return 0;
+}
+
+void
+writeData3( const std::string sensor_name,
+            const std::vector< double >& gyro_ts_x,
+            const std::vector< double >& gyro_d_x,
+            const std::vector< double >& gyro_d_y,
+            const std::vector< double >& gyro_d_z )
+{
+    std::ofstream out_t;
+    std::ofstream out_x;
+    std::ofstream out_y;
+    std::ofstream out_z;
+    out_t.open( data_save_path + "data_" + sensor_name + "_t.txt", std::ios::trunc );
+    out_x.open( data_save_path + "data_" + sensor_name + "_x.txt", std::ios::trunc );
+    out_y.open( data_save_path + "data_" + sensor_name + "_y.txt", std::ios::trunc );
+    out_z.open( data_save_path + "data_" + sensor_name + "_z.txt", std::ios::trunc );
+    out_t << std::setprecision( 10 );
+    out_x << std::setprecision( 10 );
+    out_y << std::setprecision( 10 );
+    out_z << std::setprecision( 10 );
+
+    for ( int index = 0; index < gyro_ts_x.size( ); ++index )
+    {
+        out_t << gyro_ts_x[index] << '\n';
+        out_x << gyro_d_x[index] << '\n';
+        out_y << gyro_d_y[index] << '\n';
+        out_z << gyro_d_z[index] << '\n';
+    }
+
+    out_t.close( );
+    out_x.close( );
+    out_y.close( );
+    out_z.close( );
+}
+
+void
+writeYAML( const std::string data_path,
+           const std::string sensor_name,
+           const imu::FitAllanGyr& gyr_x,
+           const imu::FitAllanGyr& gyr_y,
+           const imu::FitAllanGyr& gyr_z,
+           const imu::FitAllanAcc& acc_x,
+           const imu::FitAllanAcc& acc_y,
+           const imu::FitAllanAcc& acc_z )
+{
+    cv::FileStorage fs( data_path + sensor_name + "_imu_param.yaml", cv::FileStorage::WRITE );
+
+    fs << "type"
+       << "IMU";
+
+    fs << "name" << sensor_name;
+
+    fs << "Gyrd";
+    fs << "{";
+    fs << "unit"
+       << " rad/s";
+
+    fs << "avg-axis";
+    fs << "{";
+    fs << std::string( "gyr_nd" )
+       << ( gyr_x.getWhiteNoise( ) + gyr_y.getWhiteNoise( ) + gyr_z.getWhiteNoise( ) ) / 3;
+    fs << std::string( "gyr_wd" )
+       << ( gyr_x.getBiasInstability( ) + gyr_y.getBiasInstability( ) + gyr_z.getBiasInstability( ) ) / 3;
+
+    fs << "}";
+
+    fs << "x-axis";
+    fs << "{";
+    fs << std::string( "gyr_nd" ) << gyr_x.getWhiteNoise( );
+    fs << std::string( "gyr_wd" ) << gyr_x.getBiasInstability( );
+    fs << "}";
+
+    fs << "y-axis";
+    fs << "{";
+    fs << std::string( "gyr_nd" ) << gyr_y.getWhiteNoise( );
+    fs << std::string( "gyr_wd" ) << gyr_y.getBiasInstability( );
+    fs << "}";
+
+    fs << "z-axis";
+    fs << "{";
+    fs << std::string( "gyr_nd" ) << gyr_z.getWhiteNoise( );
+    fs << std::string( "gyr_wd" ) << gyr_z.getBiasInstability( );
+    fs << "}";
+
+    fs << "}";
+
+    fs << "Accd";
+    fs << "{";
+    fs << "unit"
+       << " m/s^2";
+
+    fs << "avg-axis";
+    fs << "{";
+    fs << std::string( "acc_nd" )
+       << ( acc_x.getWhiteNoise( ) + acc_y.getWhiteNoise( ) + acc_z.getWhiteNoise( ) ) / 3;
+    fs << std::string( "acc_wd" )
+       << ( acc_x.getBiasInstability( ) + acc_y.getBiasInstability( ) + acc_z.getBiasInstability( ) ) / 3;
+    fs << "}";
+
+    fs << "x-axis";
+    fs << "{";
+    fs << std::string( "acc_nd" ) << acc_x.getWhiteNoise( );
+    fs << std::string( "acc_wd" ) << acc_x.getBiasInstability( );
+    fs << "}";
+
+    fs << "y-axis";
+    fs << "{";
+    fs << std::string( "acc_nd" ) << acc_y.getWhiteNoise( );
+    fs << std::string( "acc_wd" ) << acc_y.getBiasInstability( );
+    fs << "}";
+
+    fs << "z-axis";
+    fs << "{";
+    fs << std::string( "acc_nd" ) << acc_z.getWhiteNoise( );
+    fs << std::string( "acc_wd" ) << acc_z.getBiasInstability( );
+    fs << "}";
+
+    fs << "}";
+
+
+    fs << "Gyr";
+    fs << "{";
+    fs << "unit"
+       << " rad/s";
+
+    fs << "avg-axis";
+    fs << "{";
+    fs << std::string( "gyr_n" )
+       << ( gyr_x.getWhiteNoiseCtn( ) + gyr_y.getWhiteNoiseCtn( ) + gyr_z.getWhiteNoiseCtn( ) ) / 3;
+    fs << std::string( "gyr_w" )
+       << ( gyr_x.getBiasInstabilityCtn( ) + gyr_y.getBiasInstabilityCtn( ) + gyr_z.getBiasInstabilityCtn( ) ) / 3;
+
+    fs << "}";
+
+    fs << "x-axis";
+    fs << "{";
+    fs << std::string( "gyr_n" ) << gyr_x.getWhiteNoiseCtn( );
+    fs << std::string( "gyr_w" ) << gyr_x.getBiasInstabilityCtn( );
+    fs << "}";
+
+    fs << "y-axis";
+    fs << "{";
+    fs << std::string( "gyr_n" ) << gyr_y.getWhiteNoiseCtn( );
+    fs << std::string( "gyr_w" ) << gyr_y.getBiasInstabilityCtn( );
+    fs << "}";
+
+    fs << "z-axis";
+    fs << "{";
+    fs << std::string( "gyr_n" ) << gyr_z.getWhiteNoiseCtn( );
+    fs << std::string( "gyr_w" ) << gyr_z.getBiasInstabilityCtn( );
+    fs << "}";
+
+    fs << "}";
+
+    fs << "Acc";
+    fs << "{";
+    fs << "unit"
+       << " m/s^2";
+
+    fs << "avg-axis";
+    fs << "{";
+    fs << std::string( "acc_n" )
+       << ( acc_x.getWhiteNoiseCtn( ) + acc_y.getWhiteNoiseCtn( ) + acc_z.getWhiteNoiseCtn( ) ) / 3;
+    fs << std::string( "acc_w" )
+       << ( acc_x.getBiasInstabilityCtn( ) + acc_y.getBiasInstabilityCtn( ) + acc_z.getBiasInstabilityCtn( ) ) / 3;
+    fs << "}";
+
+    fs << "x-axis";
+    fs << "{";
+    fs << std::string( "acc_n" ) << acc_x.getWhiteNoiseCtn( );
+    fs << std::string( "acc_w" ) << acc_x.getBiasInstabilityCtn( );
+    fs << "}";
+
+    fs << "y-axis";
+    fs << "{";
+    fs << std::string( "acc_n" ) << acc_y.getWhiteNoiseCtn( );
+    fs << std::string( "acc_w" ) << acc_y.getBiasInstabilityCtn( );
+    fs << "}";
+
+    fs << "z-axis";
+    fs << "{";
+    fs << std::string( "acc_n" ) << acc_z.getWhiteNoiseCtn( );
+    fs << std::string( "acc_w" ) << acc_z.getBiasInstabilityCtn( );
+    fs << "}";
+
+    fs << "}";
+
+    fs.release( );
 }

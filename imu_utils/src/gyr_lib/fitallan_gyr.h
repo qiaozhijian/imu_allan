@@ -64,6 +64,8 @@ class FitAllanGyr
     std::vector< double > calcSimDeviation( const std::vector< double > taus ) const;
     double getBiasInstability( ) const;
     double getWhiteNoise( ) const;
+    double getBiasInstabilityCtn( ) const;
+    double getWhiteNoiseCtn( ) const;
 
     private:
     std::vector< double > initValue( std::vector< double > sigma2s, std::vector< double > taus );

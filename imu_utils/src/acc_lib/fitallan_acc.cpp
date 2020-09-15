@@ -127,6 +127,18 @@ FitAllanAcc::getWhiteNoise( ) const
     return sqrt( freq ) * sqrt( calcSigma2( Q, N, B, K, R, 1 ) );
 }
 
+double
+FitAllanAcc::getBiasInstabilityCtn( ) const
+{
+    return sqrt( freq ) * findMinNum( calcSimDeviation( m_taus ) ) / ( 57.3 * 3600 );
+}
+
+double
+FitAllanAcc::getWhiteNoiseCtn( ) const
+{
+    return sqrt( calcSigma2( Q, N, B, K, R, 1 ) ) / ( 57.3 * 3600 );
+}
+
 std::vector< double >
 FitAllanAcc::checkData( std::vector< double > sigma2s, std::vector< double > taus )
 {
